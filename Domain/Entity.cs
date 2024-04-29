@@ -8,6 +8,7 @@ public class Entity
     public string EditedBy { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime EditedAt { get; set; } = DateTime.Now;
+    public bool Active { get; set; } = true;
 
     public Entity()
     {
