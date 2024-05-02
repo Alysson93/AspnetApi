@@ -36,12 +36,8 @@ public class CategoryController
     [HttpPost]
     public IResult Post([FromBody] CategoryRequest request)
     {
-        Category category = new Category
-        {
-            Name = request.Name,
-            CreatedBy = "Test User",
-            EditedBy = "Test User"
-        };
+        Category category = new Category(request.Name, "Author");
+        if (!category.IsValid) return Results.BadRequest(category.Notifications);
         _context.Categories.Add(category);
         _context.SaveChanges();
         return Results.Created($"/api/v1/categories/{category.Id}", category.Id);
