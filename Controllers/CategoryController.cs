@@ -24,7 +24,7 @@ public class CategoryController
         return Results.Ok(response);
     }
 
-    [HttpGet("{id:Guid}")]
+    [HttpGet("{id:guid}")]
     public IResult GetBy([FromRoute] Guid id)
     {
         var category = _context.Categories.Where(c => c.Id == id).FirstOrDefault();
@@ -43,7 +43,7 @@ public class CategoryController
         return Results.Created($"/api/v1/categories/{category.Id}", category.Id);
     }
 
-    [HttpPut("{id:Guid}")]
+    [HttpPut("{id:guid}")]
     public IResult Put([FromRoute] Guid id, [FromBody] CategoryRequest request)
     {
         var category = _context.Categories.Where(c => c.Id == id).FirstOrDefault();
@@ -57,7 +57,7 @@ public class CategoryController
     }
 
 
-    [HttpDelete("{id:Guid}")]
+    [HttpDelete("{id:guid}")]
     public IResult Delete([FromRoute] Guid id)
     {
         var category = _context.Categories.Where(c => c.Id == id).FirstOrDefault();
