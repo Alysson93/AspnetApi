@@ -37,7 +37,13 @@ public class CategoryController
     public IResult Post([FromBody] CategoryRequest request)
     {
         Category category = new Category(request.Name, "Author");
-        if (!category.IsValid) return Results.BadRequest(category.Notifications);
+        if (!category.IsValid)
+        {
+            var errors = category.Notifications.GroupBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Message)
+                .ToArray());
+            return Results.ValidationProblem(errors);
+        }
         _context.Categories.Add(category);
         _context.SaveChanges();
         return Results.Created($"/api/v1/categories/{category.Id}", category.Id);
