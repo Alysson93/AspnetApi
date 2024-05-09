@@ -1,6 +1,7 @@
 using AspnetApi.Data;
 using AspnetApi.Domain.Products;
 using AspnetApi.Dtos;
+using AspnetApi.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AspnetApi.Controllers;
@@ -38,12 +39,7 @@ public class CategoryController
     {
         Category category = new Category(request.Name, "Author");
         if (!category.IsValid)
-        {
-            var errors = category.Notifications.GroupBy(g => g.Key)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.Message)
-                .ToArray());
-            return Results.ValidationProblem(errors);
-        }
+            return Results.ValidationProblem(category.Notifications.ConvertToProblemDetails());
         _context.Categories.Add(category);
         _context.SaveChanges();
         return Results.Created($"/api/v1/categories/{category.Id}", category.Id);
@@ -54,10 +50,7 @@ public class CategoryController
     {
         var category = _context.Categories.Where(c => c.Id == id).FirstOrDefault();
         if (category == null) return Results.NotFound();
-        category.Name = request.Name;
-        category.Active = request.Active;
-        category.EditedAt = DateTime.Now;
-        category.EditedBy = "User edit";
+        category.Edit(request.Name, request.Active, "User edit");
         _context.SaveChanges();
         return Results.NoContent();
     }
