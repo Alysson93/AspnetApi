@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AspnetApi.Data;
 using AspnetApi.Dtos;
 using Microsoft.AspNetCore.Identity;
@@ -26,6 +27,10 @@ public class EmployeeController : ControllerBase
         };
         var result = _manager.CreateAsync(user, request.Password).Result;
         if (!result.Succeeded) return Results.BadRequest(result.Errors.First());
+        var claimResult = _manager.AddClaimAsync(user, new Claim("EmployeeCode", request.Code)).Result;
+        if (!claimResult.Succeeded) return Results.BadRequest(claimResult.Errors.First());
+        claimResult = _manager.AddClaimAsync(user, new Claim("EmployeeName", request.Name)).Result;
+        if (!claimResult.Succeeded) return Results.BadRequest(claimResult.Errors.First());
         return Results.Created($"/employees/{user.Id}", user.Id);
     }
 }
