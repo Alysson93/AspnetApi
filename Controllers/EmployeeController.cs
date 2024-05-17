@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using AspnetApi.Data;
 using AspnetApi.Dtos;
+using AspnetApi.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,14 +26,14 @@ public class EmployeeController : ControllerBase
             Email = request.Email
         };
         var result = _manager.CreateAsync(user, request.Password).Result;
-        if (!result.Succeeded) return Results.BadRequest(result.Errors.First());
+        if (!result.Succeeded) return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
         var userClaims = new List<Claim>
         {
             new Claim("EmployeeCode", request.Code),
             new Claim("EmployeeName", request.Name)
         };
         var claimResult = _manager.AddClaimsAsync(user, userClaims).Result;
-        if (!claimResult.Succeeded) return Results.BadRequest(claimResult.Errors.First());
+        if (!claimResult.Succeeded) return Results.ValidationProblem(claimResult.Errors.ConvertToProblemDetails());
         return Results.Created($"/employees/{user.Id}", user.Id);
     }
 }
