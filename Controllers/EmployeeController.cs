@@ -17,6 +17,21 @@ public class EmployeeController : ControllerBase
         _manager = manager;
     }
 
+    [HttpGet]
+    public IResult Get([FromQuery] int skip = 0, [FromQuery] int take = 5)
+    {
+        var users = _manager.Users.Skip(skip).Take(take).ToList();
+        var employees = new List<EmployeeResponse>();
+        foreach(var item in users)
+        {
+            var claims = _manager.GetClaimsAsync(item).Result;
+            var claimName = claims.FirstOrDefault(c => c.Type == "EmployeeName");
+            var username = claimName != null ? claimName.Value : string.Empty;
+            employees.Add(new EmployeeResponse(item.Email, username));
+        }
+        return Results.Ok(employees);
+    }
+
     [HttpPost]
     public IResult Post(EmployeeRequest request)
     {

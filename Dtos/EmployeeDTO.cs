@@ -6,3 +6,8 @@ public record EmployeeRequest(
     string Code,
     string Name
 );
+
+public record EmployeeResponse(
+    string Email,
+    string Name
+);
