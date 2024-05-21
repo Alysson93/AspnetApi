@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using AspnetApi.Data;
 using AspnetApi.Dtos;
 using AspnetApi.Utils;
 using Microsoft.AspNetCore.Identity;
@@ -11,24 +12,25 @@ namespace AspnetApi.Controllers;
 public class EmployeeController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _manager;
+    private readonly AppDbContext _context;
 
-    public EmployeeController(UserManager<IdentityUser> manager)
+    public EmployeeController(UserManager<IdentityUser> manager, AppDbContext context)
     {
         _manager = manager;
+        _context = context;
     }
 
     [HttpGet]
     public IResult Get([FromQuery] int skip = 0, [FromQuery] int take = 5)
     {
-        var users = _manager.Users.Skip(skip).Take(take).ToList();
-        var employees = new List<EmployeeResponse>();
-        foreach(var item in users)
-        {
-            var claims = _manager.GetClaimsAsync(item).Result;
-            var claimName = claims.FirstOrDefault(c => c.Type == "EmployeeName");
-            var username = claimName != null ? claimName.Value : string.Empty;
-            employees.Add(new EmployeeResponse(item.Email, username));
-        }
+        var employees = (
+            from user in _context.Users
+            join claim in _context.UserClaims
+            on user.Id equals claim.UserId
+            where claim.ClaimType == "EmployeeName"
+            orderby claim.ClaimValue
+            select new EmployeeResponse(user.Email, claim.ClaimValue)
+        ).Skip(skip).Take(take);
         return Results.Ok(employees);
     }
 

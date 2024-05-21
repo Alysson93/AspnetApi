@@ -8,6 +8,6 @@ public record EmployeeRequest(
 );
 
 public record EmployeeResponse(
-    string Email,
-    string Name
+    string? Email,
+    string? Name
 );
