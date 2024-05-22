@@ -35,7 +35,7 @@ public class EmployeeController : ControllerBase
         return Results.Ok(employees);
     }
 
-    [HttpPost] [Authorize(Policy = "EmployeePolicy")]
+    [HttpPost] [Authorize(Policy = "AdminPolicy")]
     public IResult Post(EmployeeRequest request)
     {
         var user = new IdentityUser

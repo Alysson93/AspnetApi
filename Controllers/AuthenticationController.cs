@@ -28,19 +28,23 @@ public class AuthenticationController : ControllerBase
         var user = _manager.FindByEmailAsync(request.Email).Result;
         if (user == null || !_manager.CheckPasswordAsync(user, request.Password).Result)
             return Results.BadRequest();
+        var claims = _manager.GetClaimsAsync(user).Result;
+        var subject = new ClaimsIdentity([
+            new Claim(ClaimTypes.Email, request.Email),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
+        ]);
+        subject.AddClaims(claims);
         var key = Encoding.ASCII.GetBytes(_configuration["JwtBearerTokenSettings:SecretKey"]);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity([
-                new Claim(ClaimTypes.Email, request.Email),
-                new Claim("EmployeeCode", "1")
-            ]),
+            Subject = subject,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key), 
                 SecurityAlgorithms.HmacSha256Signature
             ),
             Audience = _configuration["JwtBearerTokenSettings:Audience"],
-            Issuer = _configuration["JwtBearerTokenSettings:Issuer"]
+            Issuer = _configuration["JwtBearerTokenSettings:Issuer"],
+            Expires = DateTime.UtcNow.AddSeconds(60)
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
