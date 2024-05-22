@@ -2,6 +2,7 @@ using AspnetApi.Data;
 using AspnetApi.Domain.Products;
 using AspnetApi.Dtos;
 using AspnetApi.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AspnetApi.Controllers;
@@ -34,7 +35,7 @@ public class CategoryController
         return Results.Ok(response);
     }
 
-    [HttpPost]
+    [HttpPost] [Authorize]
     public IResult Post([FromBody] CategoryRequest request)
     {
         Category category = new Category(request.Name, "Author");

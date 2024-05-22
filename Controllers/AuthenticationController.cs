@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text;
 using AspnetApi.Dtos;
@@ -14,10 +13,12 @@ namespace AspnetApi.Controllers;
 public class AuthenticationController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _manager;
+    private readonly IConfiguration _configuration;
 
-    public AuthenticationController(UserManager<IdentityUser> manager)
+    public AuthenticationController(UserManager<IdentityUser> manager, IConfiguration configuration)
     {
         _manager = manager;
+        _configuration = configuration;
     }
 
     [HttpPost("login")]
@@ -26,7 +27,7 @@ public class AuthenticationController : ControllerBase
         var user = _manager.FindByEmailAsync(request.Email).Result;
         if (user == null || !_manager.CheckPasswordAsync(user, request.Password).Result)
             return Results.BadRequest();
-        var key = Encoding.ASCII.GetBytes("Abcdefghijkl123!@4567890mnopqrstuv");
+        var key = Encoding.ASCII.GetBytes(_configuration["JwtBearerTokenSettings:SecretKey"]);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity([
@@ -36,8 +37,8 @@ public class AuthenticationController : ControllerBase
                 new SymmetricSecurityKey(key), 
                 SecurityAlgorithms.HmacSha256Signature
             ),
-            Audience = "AspNetApi",
-            Issuer = "Issuer"
+            Audience = _configuration["JwtBearerTokenSettings:Audience"],
+            Issuer = _configuration["JwtBearerTokenSettings:Issuer"]
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
