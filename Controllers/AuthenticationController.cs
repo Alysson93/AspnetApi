@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AspnetApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -21,7 +22,7 @@ public class AuthenticationController : ControllerBase
         _configuration = configuration;
     }
 
-    [HttpPost("login")]
+    [HttpPost("login")] [AllowAnonymous]
     public IResult Login([FromBody] LoginDTO request)
     {
         var user = _manager.FindByEmailAsync(request.Email).Result;
@@ -31,7 +32,8 @@ public class AuthenticationController : ControllerBase
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity([
-                new Claim(ClaimTypes.Email, request.Email)
+                new Claim(ClaimTypes.Email, request.Email),
+                new Claim("EmployeeCode", "1")
             ]),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key), 

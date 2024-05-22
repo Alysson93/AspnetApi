@@ -2,6 +2,7 @@ using System.Security.Claims;
 using AspnetApi.Data;
 using AspnetApi.Dtos;
 using AspnetApi.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,7 @@ public class EmployeeController : ControllerBase
         _context = context;
     }
 
-    [HttpGet]
+    [HttpGet] [Authorize(Policy = "EmployeePolicy")]
     public IResult Get([FromQuery] int skip = 0, [FromQuery] int take = 5)
     {
         var employees = (
@@ -34,7 +35,7 @@ public class EmployeeController : ControllerBase
         return Results.Ok(employees);
     }
 
-    [HttpPost]
+    [HttpPost] [Authorize(Policy = "EmployeePolicy")]
     public IResult Post(EmployeeRequest request)
     {
         var user = new IdentityUser

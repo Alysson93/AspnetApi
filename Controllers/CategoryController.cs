@@ -18,7 +18,7 @@ public class CategoryController
         _context = context;
     }
 
-    [HttpGet]
+    [HttpGet] [AllowAnonymous]
     public IResult Get([FromQuery]int skip = 0, [FromQuery]int take = 5)
     {
         var categories = _context.Categories.Skip(skip).Take(take).ToList();
@@ -26,7 +26,7 @@ public class CategoryController
         return Results.Ok(response);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}")] [AllowAnonymous]
     public IResult GetBy([FromRoute] Guid id)
     {
         var category = _context.Categories.Where(c => c.Id == id).FirstOrDefault();
@@ -35,7 +35,7 @@ public class CategoryController
         return Results.Ok(response);
     }
 
-    [HttpPost] [Authorize]
+    [HttpPost]
     public IResult Post([FromBody] CategoryRequest request)
     {
         Category category = new Category(request.Name, "Author");
