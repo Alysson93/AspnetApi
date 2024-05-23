@@ -28,10 +28,10 @@ builder.Services.AddAuthorization(options => {
         .RequireAuthenticatedUser()
         .Build();
     options.AddPolicy("EmployeePolicy", p => {
-        p.RequireAuthenticatedUser().RequireClaim("EmployeeCode");
+        p.RequireAuthenticatedUser().RequireClaim("Code");
     });
     options.AddPolicy("AdminPolicy", p => {
-        p.RequireAuthenticatedUser().RequireClaim("EmployeeCode", "002");
+        p.RequireAuthenticatedUser().RequireClaim("Code", "002");
     });
 });
 
@@ -53,6 +53,7 @@ builder.Services.AddAuthentication(x => {
     };
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 
 ///////////////// app configuration

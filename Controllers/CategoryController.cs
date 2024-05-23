@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AspnetApi.Data;
 using AspnetApi.Domain.Products;
 using AspnetApi.Dtos;
@@ -12,10 +13,12 @@ namespace AspnetApi.Controllers;
 public class CategoryController
 {
     private readonly AppDbContext _context;
+    private readonly IHttpContextAccessor _http;
 
-    public CategoryController(AppDbContext context)
+    public CategoryController(AppDbContext context, IHttpContextAccessor http)
     {
         _context = context;
+        _http = http;
     }
 
     [HttpGet] [AllowAnonymous]
@@ -38,7 +41,8 @@ public class CategoryController
     [HttpPost]
     public IResult Post([FromBody] CategoryRequest request)
     {
-        Category category = new Category(request.Name, "Author");
+        var userId = _http.HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        Category category = new Category(request.Name, userId);
         if (!category.IsValid)
             return Results.ValidationProblem(category.Notifications.ConvertToProblemDetails());
         _context.Categories.Add(category);
@@ -49,9 +53,10 @@ public class CategoryController
     [HttpPut("{id:guid}")]
     public IResult Put([FromRoute] Guid id, [FromBody] CategoryRequest request)
     {
+        var userId = _http.HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
         var category = _context.Categories.Where(c => c.Id == id).FirstOrDefault();
         if (category == null) return Results.NotFound();
-        category.Edit(request.Name, request.Active, "User edit");
+        category.Edit(request.Name, request.Active, userId);
         _context.SaveChanges();
         return Results.NoContent();
     }

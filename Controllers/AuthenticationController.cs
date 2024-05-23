@@ -16,7 +16,9 @@ public class AuthenticationController : ControllerBase
     private readonly UserManager<IdentityUser> _manager;
     private readonly IConfiguration _configuration;
 
-    public AuthenticationController(UserManager<IdentityUser> manager, IConfiguration configuration)
+    public AuthenticationController(
+        UserManager<IdentityUser> manager, 
+        IConfiguration configuration)
     {
         _manager = manager;
         _configuration = configuration;
@@ -44,7 +46,7 @@ public class AuthenticationController : ControllerBase
             ),
             Audience = _configuration["JwtBearerTokenSettings:Audience"],
             Issuer = _configuration["JwtBearerTokenSettings:Issuer"],
-            Expires = DateTime.UtcNow.AddSeconds(60)
+            Expires = DateTime.UtcNow.AddMinutes(60)
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
