@@ -35,9 +35,7 @@ public class ProductController
     {
         var userId = _http.HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
         var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == request.CategoryId);
-        if (category == null)
-            return Results.BadRequest("Category not found");
-        Product product= new Product(request.Name, request.Description, category.Id, category, userId);
+        Product product= new Product(request.Name, request.Description, request.Price, category, userId);
         if (!product.IsValid)
             return Results.ValidationProblem(product.Notifications.ConvertToProblemDetails());
         await _context.Products.AddAsync(product);

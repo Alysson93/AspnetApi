@@ -4,6 +4,7 @@ public record ProductRequest(
     string Name,
     Guid CategoryId,
     string Description,
+    decimal Price,
     bool HasStock = true,
     bool Active = true
 );
