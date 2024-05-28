@@ -33,7 +33,9 @@ public class ProductController
     [HttpGet("stock")] [AllowAnonymous]
     public async Task<IResult> GetByStock([FromQuery]int skip = 0, [FromQuery]int take = 5)
     {
-        var products = await _context.Products
+        if (skip < 0) return Results.Problem(statusCode: 400, title: "Row should be greater than 0");
+        if (take > 1000) return Results.Problem(statusCode: 400, title: "Row should be lower than 1000");
+        var products = await _context.Products.AsNoTracking()
             .Include(p => p.Category)
             .Where(p => p.HasStock && p.Category.Active)
             .OrderBy(p => p.Name)
