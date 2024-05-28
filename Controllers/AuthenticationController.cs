@@ -15,19 +15,23 @@ public class AuthenticationController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _manager;
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
     public AuthenticationController(
         UserManager<IdentityUser> manager, 
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         _manager = manager;
         _configuration = configuration;
+        _webHostEnvironment = environment;
     }
 
     [HttpPost("login")] [AllowAnonymous]
     public IResult Login([FromBody] LoginDTO request)
     {
         var user = _manager.FindByEmailAsync(request.Email).Result;
+        Console.WriteLine("O user é " + user);
         if (user == null || !_manager.CheckPasswordAsync(user, request.Password).Result)
             return Results.BadRequest();
         var claims = _manager.GetClaimsAsync(user).Result;
@@ -46,7 +50,7 @@ public class AuthenticationController : ControllerBase
             ),
             Audience = _configuration["JwtBearerTokenSettings:Audience"],
             Issuer = _configuration["JwtBearerTokenSettings:Issuer"],
-            Expires = DateTime.UtcNow.AddMinutes(60)
+            Expires = _webHostEnvironment.IsDevelopment() ? DateTime.UtcNow.AddYears(1) : DateTime.UtcNow.AddMinutes(60)
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);

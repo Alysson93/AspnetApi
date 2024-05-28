@@ -22,11 +22,23 @@ public class ProductController
         _http = http;
     }
 
-    [HttpGet] [AllowAnonymous]
+    [HttpGet]
     public async Task<IResult> Get([FromQuery]int skip = 0, [FromQuery]int take = 5)
     {
         var products = await _context.Products.Skip(skip).Take(take).ToListAsync();
-        var response = products.Select(p => new ProductResponse(p.Name, p.Category?.Name, p.Description, p.HasStock, p.Active));
+        var response = products.Select(p => new ProductResponse(p.Name, p.Category?.Name, p.Description, p.Price, p.HasStock, p.Active));
+        return Results.Ok(response);
+    }
+
+    [HttpGet("stock")] [AllowAnonymous]
+    public async Task<IResult> GetByStock([FromQuery]int skip = 0, [FromQuery]int take = 5)
+    {
+        var products = await _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.HasStock && p.Category.Active)
+            .OrderBy(p => p.Name)
+            .Skip(skip).Take(take).ToListAsync();
+        var response = products.Select(p => new ProductResponse(p.Name, p.Category?.Name, p.Description, p.Price, p.HasStock, p.Active));
         return Results.Ok(response);
     }
 

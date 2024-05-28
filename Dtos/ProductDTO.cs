@@ -13,6 +13,7 @@ public record ProductResponse(
     string Name,
     string? CategoryName,
     string Description,
+    decimal Price,
     bool HasStock = true,
     bool Active = true
 );
