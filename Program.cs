@@ -1,5 +1,6 @@
 using System.Text;
 using AspnetApi.Data;
+using AspnetApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -55,6 +56,7 @@ builder.Services.AddAuthentication(x => {
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
+builder.Services.AddScoped<UserService>();
 
 ///////////////// app configuration
 
