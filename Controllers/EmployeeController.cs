@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AspnetApi.Data;
 using AspnetApi.Dtos;
+using AspnetApi.Services;
 using AspnetApi.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,16 +14,16 @@ namespace AspnetApi.Controllers;
 [Route("/employees")]
 public class EmployeeController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _manager;
+    private readonly UserService _service;
     private readonly AppDbContext _context;
     private readonly IHttpContextAccessor _http;
 
     public EmployeeController(
-        UserManager<IdentityUser> manager, 
+        UserService service, 
         AppDbContext context,
         IHttpContextAccessor http)
     {
-        _manager = manager;
+        _service = service;
         _context = context;
         _http = http;
     }
@@ -45,21 +46,14 @@ public class EmployeeController : ControllerBase
     public async Task<IResult> Post(EmployeeRequest request)
     {
         var userId = _http.HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-        var user = new IdentityUser
-        {
-            UserName = request.Email,
-            Email = request.Email
-        };
-        var result = await _manager.CreateAsync(user, request.Password);
-        if (!result.Succeeded) return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
         var userClaims = new List<Claim>
         {
             new Claim("Code", request.Code),
             new Claim("Name", request.Name),
             new Claim("CreatedBy", userId)
         };
-        var claimResult = await _manager.AddClaimsAsync(user, userClaims);
-        if (!claimResult.Succeeded) return Results.ValidationProblem(claimResult.Errors.ConvertToProblemDetails());
-        return Results.Created($"/employees/{user.Id}", user.Id);
+        (IdentityResult result, string id) result = await _service.Create(request.Email, request.Password, userClaims);
+        if (!result.result.Succeeded) return Results.ValidationProblem(result.result.Errors.ConvertToProblemDetails());
+        return Results.Created($"/employees/{result.id}", result.id);
     }
 }
